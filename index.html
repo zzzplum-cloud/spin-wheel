@@ -11,35 +11,35 @@
 <h2>🎡 วงล้อสุ่มรายชื่อ</h2>
 
 <textarea id="nameInput" rows="6" cols="20">
-1
-2
-3
-4
+Ned
+Robret
+Jaime
+Catalyn
 </textarea><br>
 
-<button id="spinBtn">หมุนวงล้อ</button>
+
 
 <canvas id="wheel" width="300" height="300"></canvas>
 
 <script>
 /* ================== ตั้งค่าล็อก ================== */
-const LOCK_INDEX = 1; // 0 = ชื่อแรก, 1 = ชื่อถัดไป
+const LOCK_INDEX = 1;
 /* ================================================= */
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const cx = canvas.width / 2;
 const cy = canvas.height / 2;
-const r  = canvas.width / 2;
+const outerR = canvas.width / 2;
+const innerR = 55;
 
-const spinBtn = document.getElementById("spinBtn");
 const nameInput = document.getElementById("nameInput");
 
 let names = [];
 let angle = 0;
 let spinning = false;
 
-/* โหลดรายชื่อ */
+/* โหลดชื่อ */
 function loadNames() {
   names = nameInput.value
     .split("\n")
@@ -47,21 +47,58 @@ function loadNames() {
     .filter(Boolean);
 }
 
+/* วาดทั้งหมด */
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!names.length) return;
+
+  drawWheel();
+  /* วาดขอบวงล้อสวยงาม */
+  drawWheelBorder()
+function drawWheelBorder() {
+  // เงาฟุ้งรอบวง
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerR - 2, 0, Math.PI * 2);
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur = 20;
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 10;
+  ctx.stroke();
+  ctx.restore();
+
+  // ขอบวงด้านนอก (ขาวคม)
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerR - 2, 0, Math.PI * 2);
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // ขอบวงด้านใน (รอบรู START)
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR + 2, 0, Math.PI * 2);
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+}
+
+  drawArrow();
+  drawCenterButton();
+}
+
 /* วาดวงล้อ */
 function drawWheel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (names.length === 0) return;
-
-  const slice = (Math.PI * 2) / names.length;
+  const slice = Math.PI * 2 / names.length;
 
   for (let i = 0; i < names.length; i++) {
     const start = angle + i * slice;
     const end = start + slice;
 
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.fillStyle = `hsl(${i * 360 / names.length},70%,60%)`;
+    ctx.arc(cx, cy, outerR - 5, start, end);
+    ctx.arc(cx, cy, innerR, end, start, true);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(${i * 360 / names.length},70%,70%)`;
     ctx.fill();
 
     // ข้อความ
@@ -69,95 +106,103 @@ function drawWheel() {
     ctx.translate(cx, cy);
     ctx.rotate(start + slice / 2);
     ctx.textAlign = "right";
-    ctx.font = "23px Arial";
+    ctx.font = "bold 20px Arial";
     ctx.fillStyle = "#000";
-    ctx.fillText(names[i], r - 10, 5);
+    ctx.fillText(names[i], outerR - 20, 6);
     ctx.restore();
   }
-
-  // ลูกศรด้านบน (สามเหลี่ยมชี้ลง)
-  const arrowOffsetY = 0; // ปรับขยับขึ้น/ลงได้
-  ctx.fillStyle = "black";
-  ctx.beginPath();
-  ctx.moveTo(cx, 10 + arrowOffsetY);       // ยอดบน
-  ctx.lineTo(cx - 10, 0 + arrowOffsetY); // ซ้ายล่าง
-  ctx.lineTo(cx + 10, 0 + arrowOffsetY); // ขวาล่าง
-  ctx.closePath();
-  ctx.fill();
 }
 
-/* ปุ่มหมุน */
-spinBtn.addEventListener("click", spin);
+/* ลูกศรด้านบน (คว่ำลง + ยกขึ้นไม่บังชื่อ) */
+function drawArrow() {
+  const offsetY = -18; // 👈 ปรับค่านี้ได้ (ยิ่งติดลบ ยิ่งสูง)
 
-/* วาดวงล้อตั้งแต่เปิดหน้า */
-loadNames();
-drawWheel();
+  ctx.fillStyle = "#fff";
+  ctx.strokeStyle = "#ccc";
+  ctx.lineWidth = 3;
 
-/* เมื่อผู้เล่นแก้ไขชื่อ → วงล้อเปลี่ยนทันที */
-nameInput.addEventListener("input", () => {
-  loadNames();
-  drawWheel();
+  ctx.beginPath();
+  ctx.moveTo(cx, 42 + offsetY);        // ปลายแหลมล่าง
+  ctx.lineTo(cx - 22, 6 + offsetY);    // ซ้ายบน
+  ctx.lineTo(cx + 22, 6 + offsetY);    // ขวาบน
+  ctx.closePath();
+
+  ctx.fill();
+  ctx.stroke();
+}
+
+
+/* ปุ่ม START */
+function drawCenterButton() {
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR - 5, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  ctx.shadowColor = "rgba(0,0,0,0.2)";
+  ctx.shadowBlur = 10;
+
+  ctx.fillStyle = "#5aa9e6";
+  ctx.font = "bold 22px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("START", cx, cy);
+  ctx.shadowBlur = 0;
+}
+
+/* ตรวจคลิก START */
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left - cx;
+  const y = e.clientY - rect.top - cy;
+  if (Math.sqrt(x*x + y*y) <= innerR) spin();
 });
 
-/* ================== ฟังก์ชัน spin() เวอร์ชันใหม่ ================== */
+/* หมุน (logic เดิม) */
 function spin() {
   if (spinning) return;
   loadNames();
-  if (names.length === 0) return alert("กรุณาใส่รายชื่อ");
+  if (!names.length) return alert("ใส่รายชื่อก่อน");
 
-  const slice = (Math.PI * 2) / names.length;
+  const slice = Math.PI * 2 / names.length;
+  const spins = Math.floor(Math.random() * 40) + 40;
 
-  // --- กำหนดรอบหมุนแบบสุ่ม + ล็อกผล ---
-  const minSpins = 40;   // รอบต่ำสุด
-  const maxSpins = 80;  // รอบสูงสุด
-  const spins = Math.floor(Math.random() * (maxSpins - minSpins + 1)) + minSpins;
-
-  const targetAngle =
+  const target =
     Math.PI * 2 * spins
     - Math.PI / 2
-    - (LOCK_INDEX * slice)
-    - (slice / 2);
+    - LOCK_INDEX * slice
+    - slice / 2;
 
-  const startAngle = angle;
+  const start = angle;
   const startTime = performance.now();
-  const duration = 10000; // เวลาหมุน (ms)
-
+  const duration = 9000;
   spinning = true;
 
-  function animate(time) {
-    const t = Math.min((time - startTime) / duration, 1);
+  function animate(t) {
+    const p = Math.min((t - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    angle = start + (target - start) * ease;
+    draw();
 
-    // easing แบบ cubic-out (ค่อยๆ ชะลอ)
-    const ease = 1 - Math.pow(1 - t, 3);
-
-    angle = startAngle + (targetAngle - startAngle) * ease;
-    drawWheel();
-
-    if (t < 1) {
-      requestAnimationFrame(animate);
-    } else {
+    if (p < 1) requestAnimationFrame(animate);
+    else {
       spinning = false;
       alert("🎯 ได้ชื่อ: " + names[LOCK_INDEX]);
     }
   }
-
   requestAnimationFrame(animate);
 }
 
-
-/* ปุ่มหมุน */
-spinBtn.addEventListener("click", spin);
-
-/* วาดวงล้อตั้งแต่เปิดหน้า */
+/* init */
 loadNames();
-drawWheel();
-
-/* เมื่อผู้เล่นแก้ไขชื่อ → วงล้อเปลี่ยนทันที */
+draw();
 nameInput.addEventListener("input", () => {
+  if (spinning) return;   // ❌ ไม่ให้อัปเดตตอนกำลังหมุน
   loadNames();
-  drawWheel();
+  draw();                 // วาดวงล้อใหม่ทันที
 });
+
 </script>
+
 
 </body>
 </html>
