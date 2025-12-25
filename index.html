@@ -192,6 +192,11 @@ function spin() {
 
   spinSound.currentTime = 0;
   spinSound.play();
+  // 🔓 ปลดล็อกเสียงชนะ (สำคัญมาก)
+ winSound.currentTime = 0;
+ winSound.play();
+ winSound.pause();
+
 
   if (spinning) return;
   loadNames();
@@ -249,6 +254,7 @@ nameInput.addEventListener("input", () => {
 
 </body>
 </html>
+
 
 
 
