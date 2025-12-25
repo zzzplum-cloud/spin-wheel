@@ -7,6 +7,8 @@
 </head>
 
 <body>
+  <audio id="spinSound" src="spin.mp3"></audio>
+ <audio id="winSound" src="win.mp3"></audio>
   <div id="center"
      style="
        min-height:100vh;
@@ -14,7 +16,7 @@
        flex-direction:column;
        align-items:center;
        justify-content:center;
-       margin-top: -30px;
+       margin-top: -30px;     
      ">
 
 
@@ -26,9 +28,7 @@
 Ned
 Robret
 Jaime
-Cataly
-Jorah
-Cersei
+Catalyn
 </textarea><br>
 
 
@@ -37,6 +37,8 @@ Cersei
  </div>
  </body>
 <script>
+  const spinSound = document.getElementById("spinSound");
+const winSound  = document.getElementById("winSound");
 /* ================== ตั้งค่าล็อก ================== */
 const LOCK_INDEX = 1;
 /* ================================================= */
@@ -173,7 +175,8 @@ canvas.addEventListener("click", e => {
 });
 
 /* หมุน (logic เดิม) */
-function spin() {
+function spin() {spinSound.currentTime = 0; // รีเซ็ตเสียง
+spinSound.play();         // เล่นเสียงหมุน
   if (spinning) return;
   loadNames();
   if (!names.length) return alert("ใส่รายชื่อก่อน");
@@ -201,6 +204,12 @@ function spin() {
     if (p < 1) requestAnimationFrame(animate);
     else {
       spinning = false;
+      spinSound.pause();
+spinSound.currentTime = 0;
+
+winSound.currentTime = 0;
+winSound.play();
+
       alert("🎯 ได้ชื่อ: " + names[LOCK_INDEX]);
     }
   }
@@ -221,6 +230,4 @@ nameInput.addEventListener("input", () => {
 
 </body>
 </html>
-
-
 
