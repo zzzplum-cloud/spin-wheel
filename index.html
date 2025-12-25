@@ -35,6 +35,13 @@ Catalyn
 
 <canvas id="wheel" width="300" height="300"></canvas>
  </div>
+    <div id="result" style="
+  margin-top:15px;
+  font-size:20px;
+  font-weight:bold;
+  color:#333;
+"></div>
+
  </body>
 <script>
   const spinSound = document.getElementById("spinSound");
@@ -210,7 +217,11 @@ spinSound.play();         // เล่นเสียงหมุน
 
   winSound.currentTime = 0;
   winSound.play();
-                }
+
+  document.getElementById("result").textContent =
+    "🎯 ได้ชื่อ: " + names[LOCK_INDEX];
+}
+
   }
   requestAnimationFrame(animate);
 }
@@ -229,7 +240,6 @@ nameInput.addEventListener("input", () => {
 
 </body>
 </html>
-
 
 
 
