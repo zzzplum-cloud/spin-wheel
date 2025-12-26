@@ -8,21 +8,10 @@
 
 <body>
   <audio id="spinSound" src="spin.mp3"></audio>
- <audio id="winSound" src="win.mp3"></audio>
-  <div id="center"
-     style="
-       min-height:100vh;
-       display:flex;
-       flex-direction:column;
-       align-items:center;
-       justify-content:center;
-       margin-top: -30px;     
-     ">
+  <audio id="winSound" src="win.mp3"></audio>
 
-
- <div id="center">
-
-<h2>🎡 วงล้อสุ่มรายชื่อ</h2>
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <h2>🎡 วงล้อสุ่มรายชื่อ</h2>
 
 <textarea id="nameInput" rows="6" cols="20">
 Ned
@@ -33,24 +22,18 @@ Jorah
 Cersei
 </textarea><br>
 
-
-
 <canvas id="wheel" width="300" height="300"></canvas>
- </div>
-    <div id="result" style="
-  margin-top:15px;
-  font-size:20px;
-  font-weight:bold;
-  color:#333;
-"></div>
 
- </body>
+<div id="result" style="margin-top:15px;font-size:20px;font-weight:bold;"></div>
+</div>
+
 <script>
-  const spinSound = document.getElementById("spinSound");
-const winSound  = document.getElementById("winSound");
 /* ================== ตั้งค่าล็อก ================== */
 const LOCK_INDEX = 1;
-/* ================================================= */
+/* =============================================== */
+
+const spinSound = document.getElementById("spinSound");
+const winSound  = document.getElementById("winSound");
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
@@ -65,49 +48,21 @@ let names = [];
 let angle = 0;
 let spinning = false;
 
+/* 👇 ตัวแปรนับคลิก */
+let clickCount = 0;
+let clickTimer = null;
+const DOUBLE_CLICK_DELAY = 350;
+
 /* โหลดชื่อ */
 function loadNames() {
-  names = nameInput.value
-    .split("\n")
-    .map(s => s.trim())
-    .filter(Boolean);
+  names = nameInput.value.split("\n").map(s => s.trim()).filter(Boolean);
 }
 
 /* วาดทั้งหมด */
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   if (!names.length) return;
-
   drawWheel();
-  /* วาดขอบวงล้อสวยงาม */
-  drawWheelBorder()
-function drawWheelBorder() {
-  // เงาฟุ้งรอบวง
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, outerR - 2, 0, Math.PI * 2);
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
-  ctx.shadowBlur = 20;
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 10;
-  ctx.stroke();
-  ctx.restore();
-
-  // ขอบวงด้านนอก (ขาวคม)
-  ctx.beginPath();
-  ctx.arc(cx, cy, outerR - 2, 0, Math.PI * 2);
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 6;
-  ctx.stroke();
-
-  // ขอบวงด้านใน (รอบรู START)
-  ctx.beginPath();
-  ctx.arc(cx, cy, innerR + 2, 0, Math.PI * 2);
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-}
-
   drawArrow();
   drawCenterButton();
 }
@@ -115,22 +70,19 @@ function drawWheelBorder() {
 /* วาดวงล้อ */
 function drawWheel() {
   const slice = Math.PI * 2 / names.length;
-
   for (let i = 0; i < names.length; i++) {
     const start = angle + i * slice;
     const end = start + slice;
-
     ctx.beginPath();
     ctx.arc(cx, cy, outerR - 5, start, end);
     ctx.arc(cx, cy, innerR, end, start, true);
     ctx.closePath();
-    ctx.fillStyle = `hsl(${i * 360 / names.length},70%,70%)`;
+    ctx.fillStyle = `hsl(${i*360/names.length},70%,70%)`;
     ctx.fill();
 
-    // ข้อความ
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(start + slice / 2);
+    ctx.rotate(start + slice/2);
     ctx.textAlign = "right";
     ctx.font = "bold 20px Arial";
     ctx.fillStyle = "#000";
@@ -139,24 +91,19 @@ function drawWheel() {
   }
 }
 
-/* ลูกศรด้านบน (คว่ำลง + ยกขึ้นไม่บังชื่อ) */
+/* ลูกศร */
 function drawArrow() {
-  const offsetY = -18; // 👈 ปรับค่านี้ได้ (ยิ่งติดลบ ยิ่งสูง)
-
   ctx.fillStyle = "#fff";
   ctx.strokeStyle = "#ccc";
   ctx.lineWidth = 3;
-
   ctx.beginPath();
-  ctx.moveTo(cx, 42 + offsetY);        // ปลายแหลมล่าง
-  ctx.lineTo(cx - 22, 6 + offsetY);    // ซ้ายบน
-  ctx.lineTo(cx + 22, 6 + offsetY);    // ขวาบน
+  ctx.moveTo(cx, 24);
+  ctx.lineTo(cx - 22, 6);
+  ctx.lineTo(cx + 22, 6);
   ctx.closePath();
-
   ctx.fill();
   ctx.stroke();
 }
-
 
 /* ปุ่ม START */
 function drawCenterButton() {
@@ -164,51 +111,60 @@ function drawCenterButton() {
   ctx.arc(cx, cy, innerR - 5, 0, Math.PI * 2);
   ctx.fillStyle = "#fff";
   ctx.fill();
-  ctx.shadowColor = "rgba(0,0,0,0.2)";
-  ctx.shadowBlur = 10;
-
   ctx.fillStyle = "#5aa9e6";
   ctx.font = "bold 22px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("START", cx, cy);
-  ctx.shadowBlur = 0;
 }
 
-/* ตรวจคลิก START */
+/* คลิก START */
 canvas.addEventListener("click", e => {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left - cx;
   const y = e.clientY - rect.top - cy;
-  if (Math.sqrt(x*x + y*y) <= innerR) spin();
+  if (Math.sqrt(x*x + y*y) <= innerR) handleStartClick();
 });
 
-/* หมุน (logic เดิม) */
-function spin() {
+/* 👇 ตรวจ 1 คลิก / 2 คลิก */
+function handleStartClick() {
   if (spinning) return;
+  clickCount++;
+  if (clickTimer) clearTimeout(clickTimer);
 
-  // 🧹 ล้างผลลัพธ์เก่า
+  clickTimer = setTimeout(() => {
+    if (clickCount === 1) startSpin("LOCK");
+    else startSpin("RANDOM");
+
+    clickCount = 0;
+    clickTimer = null;
+  }, DOUBLE_CLICK_DELAY);
+}
+
+/* หมุน */
+function startSpin(mode) {
+  loadNames();
+  if (!names.length) return alert("ใส่รายชื่อก่อน");
+
   document.getElementById("result").textContent = "";
 
   spinSound.currentTime = 0;
   spinSound.play();
-  // 🔓 ปลดล็อกเสียงชนะ (สำคัญมาก)
- winSound.currentTime = 0;
- winSound.play();
- winSound.pause();
-
-
-  if (spinning) return;
-  loadNames();
-  if (!names.length) return alert("ใส่รายชื่อก่อน");
+  winSound.currentTime = 0;
+  winSound.play();
+  winSound.pause();
 
   const slice = Math.PI * 2 / names.length;
   const spins = Math.floor(Math.random() * 40) + 40;
 
+  const winIndex = (mode === "LOCK")
+    ? LOCK_INDEX
+    : Math.floor(Math.random() * names.length);
+
   const target =
     Math.PI * 2 * spins
     - Math.PI / 2
-    - LOCK_INDEX * slice
+    - winIndex * slice
     - slice / 2;
 
   const start = angle;
@@ -224,18 +180,12 @@ function spin() {
 
     if (p < 1) requestAnimationFrame(animate);
     else {
-  spinning = false;
-
-  spinSound.pause();
-  spinSound.currentTime = 0;
-
-  winSound.currentTime = 0;
-  winSound.play();
-
-  document.getElementById("result").textContent =
-    "🎯 ได้ชื่อ: " + names[LOCK_INDEX];
-}
-
+      spinning = false;
+      spinSound.pause();
+      winSound.play();
+      document.getElementById("result").textContent =
+        "🎯 ได้ชื่อ: " + names[winIndex];
+    }
   }
   requestAnimationFrame(animate);
 }
@@ -244,17 +194,14 @@ function spin() {
 loadNames();
 draw();
 nameInput.addEventListener("input", () => {
-  if (spinning) return;   // ❌ ไม่ให้อัปเดตตอนกำลังหมุน
-  loadNames();
-  draw();                 // วาดวงล้อใหม่ทันที
+  if (!spinning) {
+    loadNames();
+    draw();
+  }
 });
-
 </script>
-
-
 </body>
 </html>
-
 
 
 
